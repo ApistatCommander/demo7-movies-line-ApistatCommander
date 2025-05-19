@@ -1,13 +1,19 @@
 // SETUP: Define dimensions and margins for the charts
+// 1: CREATE BLANK SVGs
+// Set dimensions and margins for the charts
 const margin = { top: 50, right: 30, bottom: 60, left: 70 },
       width = 800 - margin.left - margin.right,
-      height = 400 - margin.top - margin.bottom;
+      height = 350 - margin.top - margin.bottom;
 
-// 1: CREATE SVG CONTAINERS
-// 1: Line Chart Container
-const svgLine = d3.select("#lineChart")
+// Create the SVG container for the bar chart
+const svgBar = d3.select("#barChart")
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// Create the SVG container for the line chart
+const svgLine = d3.select("#lineChart")
+.append("g")
+.attr("transform", `translate(${margin.left},${margin.top})`);
 
 // 2: LOAD DATA
 d3.csv("movies.csv").then(data => {
@@ -16,10 +22,11 @@ d3.csv("movies.csv").then(data => {
         d.gross = +d.gross;   // Convert gross to a number
         d.year = +d.title_year;    // Convert year to a number
         d.director = d.director_name;
+        d.score = +d.imdb_score; //rename & convert score
     });
 
     // Check your work
-    console.log(data);
+    // console.log(data);
 
     /* ===================== LINE CHART ===================== */
 
@@ -31,8 +38,8 @@ d3.csv("movies.csv").then(data => {
         && d.year >=  2010
     );
 
-    console.log(typeof data[0]["SOME_COLUMN_NAME"]);
-    console.log(cleanData);
+    // console.log(typeof data[0]["SOME_COLUMN_NAME"]);
+    // console.log(cleanData);
     
     // 3.b: Group by and summarize (aggregate gross by year)
     const dataMap = d3.rollup(cleanData,
@@ -40,7 +47,7 @@ d3.csv("movies.csv").then(data => {
         d => d.year
     );
     
-    console.log(dataMap);
+    // console.log(dataMap);
 
     // 3.c: Convert to array and sort by year
     const dataArr = Array.from(dataMap,
@@ -49,7 +56,7 @@ d3.csv("movies.csv").then(data => {
         .sort((a, b) => a.year - b.year)
     ;
 
-    console.log(dataArr);
+    // console.log(dataArr);
 
     // Check your work
     // console.log(lineData);
@@ -129,5 +136,40 @@ d3.csv("movies.csv").then(data => {
         .text("Gross Revenue ($)")
     ;
     // 7.c: Y-axis label (Average IMDb Score)
+
+});
+
+//BAr chart
+// 2: LOAD DATA
+// 2: LOAD DATA
+d3.csv("movies.csv").then(data => {
+    // 2.a: Reformat Data
+    data.forEach(d => {
+        d.gross = +d.gross;   // Convert score to a number
+        d.year = +d.title_year;    // Convert year to a number
+        d.score = +d.imdb_score; // Rename & convert to #
+        d.director = d.director_name; // Rename
+    });
+    data.forEach(d => {
+        d["score"] = +d["imdb_score"];
+        d["year"] = +d["title_year"];
+    });
+
+
+    // Check your work
+    console.log("All data: ", data);
+
+    const cleanBarData = data.filter(d =>
+        d.director != ''
+        && d.score != null
+    );
+
+    console.log("Clean bar data: ", cleanBarData);
+
+    const barMap = d3.rollup(cleanBarData
+        ,v => d3.mean(v, d => d.score)
+        ,d => d.director
+    );
+
 
 });
