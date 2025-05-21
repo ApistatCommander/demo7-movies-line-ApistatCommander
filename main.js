@@ -171,5 +171,70 @@ d3.csv("movies.csv").then(data => {
         ,d => d.director
     );
 
+    // 3.c Sort & get top 6
+    const barFinalData = Array.from(barMap // conver to array
+            ,([director, score]) => ({ director, score })
+        )
+        .sort((a, b) => b.score - a.score) // sort by score, desc
+        .slice(0, 6)  
+    ;
 
+    console.log("Final bar data: ", barFinalData);
+
+    // 4: SCALE AXES
+    // 4.a: x-axis (director)
+    let barXScale = d3.scaleBand() // Use instead of scaleLinear() for bar charts
+        .domain(barFinalData.map(d => d.director)) // Extract unique categories for x-axis
+        .range([0, width]) // START low, INCREASE
+        .padding(0.1); // Add space between bars
+
+    // 4.b: y-axis (score)
+    let barYScale = d3.scaleLinear()
+        .domain([0, d3.max(barFinalData, d => d.score)])
+        .range([height,0]); // START high, DECREASE
+
+    // 5: PLOT DATA
+    svgBar.selectAll("rect")
+        .data(barFinalData)
+        .enter()
+        .append("rect")
+        .attr("x", d => barXScale(d.director))
+        .attr("y", d => barYScale(d.score))
+        .attr("width", barXScale.bandwidth())
+        .attr("height", d => height - barYScale(d.score))
+        .attr("fill", "blue")
+        ;
+
+    // 6: ADD AXES
+    // 6.a: x-axis
+    svgBar.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(barXScale));
+
+    // 6.b: y-axis
+    svgBar.append("g")
+        .call(d3.axisLeft(barYScale));  
+
+    // 7: ADD LABELS
+    // 7.a: title
+    svgBar.append("text")
+        .attr("class", "title")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .text("Top 6 Director's IMDb Scores");
+
+    // 7.b: x-axis
+    svgBar.append("text")
+        .attr("class", "axis-label")
+        .attr("x", width / 2)
+        .attr("y", height + (margin.bottom / 2) + 10)
+        .text("Directors");
+
+    // 7.c: y-axis
+    svgBar.append("text")
+        .attr("class", "axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left / 2)
+        .attr("x", -height / 2)
+        .text("Score");
 });
